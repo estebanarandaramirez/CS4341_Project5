@@ -2,6 +2,13 @@ import sys
 import numpy as np
 from typing import NamedTuple
 
+def backtrack(variable, value, limits, unary_inclusive, unary_exclusive, binary_equal, binary_not_equals, binary_simultaneous):
+# if complete, return bags
+# Select the MRV variable to fill
+# Fill in a value and solve further (recursively),
+# backtracking an assignment when stuck
+
+
 class Variable(NamedTuple):
     item: chr
     weight: int
