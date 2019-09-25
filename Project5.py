@@ -14,26 +14,26 @@ class Limits(NamedTuple):
     lowerBound: int
     upperBound: int
 
-class UnaryInclusive(NamedTuple):
-    item: chr
-    bags: []
-
-class UnaryExclusive(NamedTuple):
-    item: chr
-    bags: []
-
-class BinaryEqual(NamedTuple):
-    items: []
-
-class BinaryNotEquals(NamedTuple):
-    items: []
-
-class BinarySimultaneous(NamedTuple):
-    items: []
-    bags: []
+# class UnaryInclusive(NamedTuple):
+#     item: chr
+#     bags: chr
+#
+# class UnaryExclusive(NamedTuple):
+#     item: chr
+#     bags: []
+#
+# class BinaryEqual(NamedTuple):
+#     items: []
+#
+# class BinaryNotEquals(NamedTuple):
+#     items: []
+#
+# class BinarySimultaneous(NamedTuple):
+#     items: []
+#     bags: []
 
 if len(sys.argv) != 2:
-    sys.exit("Must specify input and output files")
+    sys.exit("Must specify input file")
 inputFile = sys.argv[1]
 
 variables = []
@@ -46,19 +46,35 @@ notEquals = []
 simultaneous = []
 
 category = 0
+counter = 0
+inputData = np.loadtxt(inputFile, delimiter=' ', dtype='str')
 file = open(inputFile, "r")
 for line in file:
     line = line.strip()
-    if line[0] != '#':
+    if line[0] == '#':
         category += 1
-        print(line)
     else:
-        if category == 0:
-            iterateLine
-        elif category == 1:
+        if category == 1:
+            weight = int(inputData[counter][1])
+            variables.append(Variable(inputData[counter][0], weight))
         elif category == 2:
+            capacity = int(inputData[counter][1])
+            values.append(Value(inputData[counter][0], capacity))
         elif category == 3:
-        elif category == 4:
-        elif category == 5:
-        elif category == 6:
-        else:
+            lowerBound = int(inputData[counter][0])
+            upperBound = int(inputData[counter][1])
+            limits.append(Limits(lowerBound, upperBound))
+        # elif category == 4:
+        #     for category in inputData[counter]:
+        # elif category == 5:
+        #     for category in inputData[counter]:
+        # elif category == 6:
+        #     for category in inputData[counter]:
+        # elif category == 7:
+        #     for category in inputData[counter]:
+        # else:
+        #     for category in inputData[counter]:
+        counter += 1
+print(variables)
+print(values)
+print(limits)
