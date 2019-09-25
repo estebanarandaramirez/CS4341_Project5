@@ -14,27 +14,32 @@ class Limits(NamedTuple):
     lowerBound: int
     upperBound: int
 
-# class UnaryInclusive(NamedTuple):
-#     item: chr
-#     bags: chr
-#
-# class UnaryExclusive(NamedTuple):
-#     item: chr
-#     bags: []
-#
-# class BinaryEqual(NamedTuple):
-#     items: []
-#
-# class BinaryNotEquals(NamedTuple):
-#     items: []
-#
-# class BinarySimultaneous(NamedTuple):
-#     items: []
-#     bags: []
+class UnaryInclusive(NamedTuple):
+    item: chr
+    bags: str
+
+class UnaryExclusive(NamedTuple):
+    item: chr
+    bags: str
+
+class BinaryEqual(NamedTuple):
+    items: str
+
+class BinaryNotEquals(NamedTuple):
+    items: str
+
+class BinarySimultaneous(NamedTuple):
+    items: str
+    bags: str
 
 if len(sys.argv) != 2:
     sys.exit("Must specify input file")
 inputFile = sys.argv[1]
+data = np.loadtxt(inputFile, delimiter='\n', dtype='str')
+inputData = []
+for element in data:
+    element = element.split()
+    inputData.append(element)
 
 variables = []
 values = []
@@ -47,7 +52,6 @@ simultaneous = []
 
 category = 0
 counter = 0
-inputData = np.loadtxt(inputFile, delimiter=' ', dtype='str')
 file = open(inputFile, "r")
 for line in file:
     line = line.strip()
@@ -64,17 +68,47 @@ for line in file:
             lowerBound = int(inputData[counter][0])
             upperBound = int(inputData[counter][1])
             limits.append(Limits(lowerBound, upperBound))
-        # elif category == 4:
-        #     for category in inputData[counter]:
-        # elif category == 5:
-        #     for category in inputData[counter]:
-        # elif category == 6:
-        #     for category in inputData[counter]:
-        # elif category == 7:
-        #     for category in inputData[counter]:
-        # else:
-        #     for category in inputData[counter]:
+        elif category == 4:
+            bags = []
+            for i in range(len(inputData[counter])):
+                if i == 0:
+                    item = inputData[counter][i]
+                else:
+                    bags.append(inputData[counter][i])
+            inclusives.append(UnaryInclusive(item, bags))
+        elif category == 5:
+            bags = []
+            for i in range(len(inputData[counter])):
+                if i == 0:
+                    item = inputData[counter][i]
+                else:
+                    bags.append(inputData[counter][i])
+            exclusives.append(UnaryExclusive(item, bags))
+        elif category == 6:
+            items = []
+            for i in range(len(inputData[counter])):
+                items.append(inputData[counter][i])
+            equals.append(BinaryEqual(items))
+        elif category == 7:
+            items = []
+            for i in range(len(inputData[counter])):
+                items.append(inputData[counter][i])
+            notEquals.append(BinaryNotEquals(items))
+        else:
+            items = []
+            bags = []
+            for i in range(len(inputData[counter])):
+                if ord(inputData[counter][i]) < 97:
+                    items.append(inputData[counter][i])
+                else:
+                    bags.append(inputData[counter][i])
+            simultaneous.append(BinarySimultaneous(items, bags))
         counter += 1
 print(variables)
 print(values)
 print(limits)
+print(inclusives)
+print(exclusives)
+print(equals)
+print(notEquals)
+print(simultaneous)
