@@ -2,7 +2,8 @@ import sys
 import numpy as np
 from typing import NamedTuple
 
-def backtrack(variable, value, limits, unary_inclusive, unary_exclusive, binary_equal, binary_not_equals, binary_simultaneous):
+
+# def backtrack(variable, value, limits, unary_inclusive, unary_exclusive, binary_equal, binary_not_equals, binary_simultaneous):
 # if complete, return bags
 # Select the MRV variable to fill
 # Fill in a value and solve further (recursively),
@@ -11,7 +12,10 @@ def backtrack(variable, value, limits, unary_inclusive, unary_exclusive, binary_
 
 
 def maximum_capacity_helper(capacity):
-    return round(0.9*capacity)
+    return round(0.9 * capacity)
+
+
+all = ["bag", "constraint", "csp", "item", "solver"]
 
 
 class CSP(object):
@@ -21,6 +25,7 @@ class CSP(object):
 
         for item_name in self.items:
             self.items[item_name].possible_bags = self.bags.copy()
+
 
 class Item(object):
     def __init__(self, name, weight):
@@ -57,13 +62,16 @@ class Variable(NamedTuple):
     item: chr
     weight: int
 
+
 class Value(NamedTuple):
     bag: chr
     capacity: int
 
+
 class Limits(NamedTuple):
     lowerBound: int
     upperBound: int
+
 
 # class UnaryInclusive(NamedTuple):
 #     item: chr
