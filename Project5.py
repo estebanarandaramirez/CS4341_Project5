@@ -1,15 +1,7 @@
 import sys
 import numpy as np
 from typing import NamedTuple
-from Algorithms import CSP
-
-class OutputBag(NamedTuple):
-    bag: chr
-    items: str
-    numItems: int
-    totalCapacity: int
-    usedCapacity: int
-    wastedCapacity: int
+from Solve import CSP
 
 class Variable(NamedTuple):
     item: chr
@@ -40,20 +32,6 @@ class BinaryNotEquals(NamedTuple):
 class BinarySimultaneous(NamedTuple):
     items: str
     bags: str
-
-def printOutput(outputs):
-    if len(outputs) == 0:
-        print('No such assignment is possible')
-    else:
-        for output in outputs:
-            print(output.bag, end=' ')
-            for item in output.items:
-                print(item, end=' ')
-            print()
-            print('number of items: %i' % output.numItems)
-            print('total weight: %i/%i' % (output.usedCapacity, output.totalCapacity))
-            print('wasted capacity: %i' % output.wastedCapacity)
-            print()
 
 if len(sys.argv) != 2:
     sys.exit('Must specify input file')
@@ -128,5 +106,4 @@ for line in file:
             simultaneous.append(BinarySimultaneous(items, bags))
         counter += 1
 
-printOutput(CSP(variables, values, limits, inclusives, exclusives, equals, notEquals, simultaneous))
-printOutput([])
+CSP(variables, values, limits, inclusives, exclusives, equals, notEquals, simultaneous)
