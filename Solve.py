@@ -120,9 +120,10 @@ def MRVHeusitic(items, inclusives, exclusives, equals, notEquals, simultaneous):
     print(maxHeuristicItem)
     return maxHeuristicItem
 
-# def putInBag(item, variables, outputs, limits):
-#     if()
+def ForwardChecking(itemToExpand, variables, outputs, limits):
+    return
 
+allocatedItems = []
 items = []
 bags = []
 outputs = []
@@ -136,12 +137,9 @@ def CSP(variables, values, limits, inclusives, exclusives, equals, notEquals, si
     for i in range(len(variables)):
         itemToExpand = MRVHeusitic(items, inclusives, exclusives, equals, notEquals, simultaneous)
         items.remove(itemToExpand[0])
-        # putInBag(itemToExpand, variables, outputs, limits)
+        ForwardChecking(itemToExpand, variables, outputs, limits, allocatedItems)
 
 def LeastConstrainingHeuristic():
-    return
-
-def ForwardChecking():
     return
 
 def Backtracking():
