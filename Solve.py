@@ -8,6 +8,14 @@ class OutputBag(NamedTuple):
     usedCapacity: int
     wastedCapacity: int
 
+class ConstraintItems(NamedTuple):
+    binarySimultaneousItems: str
+    binarySimultaneousBags: str
+    binaryNotEquals: str
+    unaryExclusive: str
+    binaryEquals: str
+    unaryInclusive: str
+
 def printOutput(outputs):
     if len(outputs) == 0:
         print('No such assignment is possible')
@@ -25,10 +33,10 @@ def printOutput(outputs):
 #Breaks ties when two items have the same MRVHeusitic based on the total number of constraints each item has
 def DegreeHeuristic(current, new):
     sumCurrent = 0
-    for i in range(len(current)-1):
+    for i in range(len(current)-2):
         sumCurrent += current[i + 1]
     sumNew = 0
-    for i in range(len(new)-1):
+    for i in range(len(new)-2):
         sumNew += new[i + 1]
 
     if sumCurrent >= sumNew:
@@ -38,38 +46,65 @@ def DegreeHeuristic(current, new):
 
 #Helper for MRVHeusitic, iterates through unary constraints to check if the item has that constraint
 def CheckUnaryConstraints(itemName, constraint):
+    relatedElements =[]
     for line in constraint:
         if line.item == itemName:
-            return 1
-    return 0
+            relatedElements = line.bags
+            return 1, relatedElements
+    return 0, relatedElements
 
 #Helper for MRVHeusitic, iterates through binary constraints to check if the item has that constraint
 def CheckBinaryConstraints(itemName, constraint):
+    relatedElements =[]
     counter = 0
     for line in constraint:
         for element in line.items:
             if element == itemName:
+                for ele in line.items:
+                    if ele != itemName:
+                        relatedElements.append(ele)
                 counter += 1
-    return counter
+    return counter, relatedElements
+
+#Helper for MRVHeusitic, iterates through binary constraints to check if the item has that constraint
+def CheckSimultaneousConstraints(itemName, constraint):
+    relatedItems = []
+    relatedBags = []
+    counter = 0
+    for line in constraint:
+        for element in line.items:
+            if element == itemName:
+                for ele in line.items:
+                    if ele != itemName:
+                        relatedItems.append(ele)
+                for ele in line.bags:
+                    relatedBags.append(ele)
+                counter += 1
+    return counter, relatedItems, relatedBags
 
 #Returns the item with the highest heuristic value based on its weighted constraints
-def MRVHeusitic(variables, inclusives, exclusives, equals, notEquals, simultaneous):
+def MRVHeusitic(items, inclusives, exclusives, equals, notEquals, simultaneous):
     heuristics = []
-    for item in variables:
+    for item in items:
         itemHeuristic = []
-        itemName = item.item
-        itemHeuristic.append(itemName)
+        itemHeuristic.append(item)
         #Check constraints in ascending order of importance
-        itemHeuristic.append(CheckBinaryConstraints(itemName, simultaneous))
-        itemHeuristic.append(CheckBinaryConstraints(itemName, notEquals))
-        itemHeuristic.append(CheckUnaryConstraints(itemName, exclusives))
-        itemHeuristic.append(CheckBinaryConstraints(itemName, equals))
-        itemHeuristic.append(CheckUnaryConstraints(itemName, inclusives))
+        count, binarySimultaneousItems, binarySimultaneousBags = CheckSimultaneousConstraints(item, simultaneous)
+        itemHeuristic.append(count)
+        count, binaryNotEquals = CheckBinaryConstraints(item, notEquals)
+        itemHeuristic.append(count)
+        count, unaryExclusive = CheckUnaryConstraints(item, exclusives)
+        itemHeuristic.append(count)
+        count, binaryEquals = CheckBinaryConstraints(item, equals)
+        itemHeuristic.append(count)
+        count, unaryInclusive = CheckUnaryConstraints(item, inclusives)
+        itemHeuristic.append(count)
         #Sum the weighted number of constraints an item has
         sum = 0
         for i in range(len(itemHeuristic)-1):
             sum += itemHeuristic[i+1] * (i+1)
         itemHeuristic.append(sum)
+        itemHeuristic.append(ConstraintItems(binarySimultaneousItems, binarySimultaneousBags, binaryNotEquals, unaryExclusive, binaryEquals, unaryInclusive))
         #Add to the list
         heuristics.append(itemHeuristic)
     #Decide item with max heuristic and break ties if any
@@ -82,8 +117,13 @@ def MRVHeusitic(variables, inclusives, exclusives, equals, notEquals, simultaneo
             max = itemHeuristic[6]
             maxHeuristicItem = itemHeuristic
     #Return item with highest heuristic
-    return maxHeuristicItem[0]
+    print(maxHeuristicItem)
+    return maxHeuristicItem
 
+# def putInBag(item, variables, outputs, limits):
+#     if()
+
+items = []
 bags = []
 outputs = []
 
@@ -91,8 +131,12 @@ def CSP(variables, values, limits, inclusives, exclusives, equals, notEquals, si
     for bag in values:
         bags.append(bag.bag)
         outputs.append(OutputBag(bag.bag, [], 0, bag.capacity, 0, bag.capacity))
-    MRVHeusitic(variables, inclusives, exclusives, equals, notEquals, simultaneous)
-
+    for item in variables:
+        items.append(item.item)
+    for i in range(len(variables)):
+        itemToExpand = MRVHeusitic(items, inclusives, exclusives, equals, notEquals, simultaneous)
+        items.remove(itemToExpand[0])
+        # putInBag(itemToExpand, variables, outputs, limits)
 
 def LeastConstrainingHeuristic():
     return
