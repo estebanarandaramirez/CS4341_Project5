@@ -19,6 +19,7 @@ class ConstraintItems(NamedTuple):
     binaryEquals: str
     unaryInclusive: str
 
+#prints the outputs
 def printOutput(outputs):
     if len(outputs) == 0:
         print('No such assignment is possible')
