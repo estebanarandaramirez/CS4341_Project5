@@ -512,7 +512,7 @@ def Backtracking(outputs, variables):
 items = []
 bags = []
 outputs = []
-
+#CSP implimentation.
 def CSP(variables, values, limits, inclusives, exclusives, equals, notEquals, simultaneous):
     for bag in values:
         bags.append(bag.bag)
