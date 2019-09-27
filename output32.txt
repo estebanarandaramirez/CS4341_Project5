@@ -1,35 +1,40 @@
-c B M
+f G J
 number of items: 2
-total weight 15/15
+total weight 17/17
 wasted capacity: 0
 
-b K D
+a B O
 number of items: 2
-total weight 15/15
+total weight 17/17
 wasted capacity: 0
 
-d G H
+d A P
 number of items: 2
-total weight 15/15
+total weight 17/17
 wasted capacity: 0
 
-f F I
+h H I
 number of items: 2
-total weight 15/15
+total weight 17/17
 wasted capacity: 0
 
-e E J
+g F K
 number of items: 2
-total weight 15/15
+total weight 17/17
 wasted capacity: 0
 
-a C L
+e E L
 number of items: 2
-total weight 15/15
+total weight 17/17
 wasted capacity: 0
 
-g A N
+b D M
 number of items: 2
-total weight 15/15
+total weight 17/17
+wasted capacity: 0
+
+c C N
+number of items: 2
+total weight 17/17
 wasted capacity: 0
 

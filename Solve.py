@@ -3,8 +3,14 @@ from typing import NamedTuple
 import random
 import math
 
+
 initialTime = 0
 endTime = 0
+
+class Variable(NamedTuple):
+    item: chr
+    weight: int
+
 class OutputBag(NamedTuple):
     bag: chr
     items: str
@@ -517,6 +523,7 @@ def Backtracking(outputs, variables):
 items = []
 bags = []
 outputs = []
+
 #CSP implimentation.
 def CSP(variables, values, limits, inclusives, exclusives, equals, notEquals, simultaneous):
     initialTime = 0
@@ -532,12 +539,18 @@ def CSP(variables, values, limits, inclusives, exclusives, equals, notEquals, si
     for i in range(len(variables)):
         itemToExpand = MRVHeusitic(items, inclusives, exclusives, equals, notEquals, simultaneous)
         items.remove(itemToExpand[0])
-        #print(items)
-        #item = itemToExpand[0]
+        # Testing for just backtrack, backtrack+MVC, backtrack+MVC+ForwardChecking
+        #itemIndex = [i for i, v in enumerate(variablescopy) if v[0] == itemToExpand[0]]
+        #item = Variable(itemToExpand[0], variablescopy[itemIndex[0]][1])
+        #item = variablescopy[i]
+        #bag = random.choice(valuescopy)[0]
+        #print(itemIndex[0])
+        #print(item)
         #bag = valuescopy[random.randint(0, len(variablescopy))]
-        #print(bag)
-        bag, item = ForwardChecking(itemToExpand, variables, outputs, limits)
+        #print(item)
         #print(valuescopy[random.randint(0,len(variablescopy)) ])
+
+        bag, item = ForwardChecking(itemToExpand, variables, outputs, limits)
         if bag == '0':
             noOutput = []
             printOutput(noOutput)
@@ -546,7 +559,6 @@ def CSP(variables, values, limits, inclusives, exclusives, equals, notEquals, si
     Backtracking(outputs, variables)
     endTime = time.time()
     print("time elapsed", str(endTime - initialTime))
-
     return outputs
 
 #LCV helper function.
