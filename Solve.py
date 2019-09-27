@@ -19,6 +19,7 @@ class ConstraintItems(NamedTuple):
     binaryEquals: str
     unaryInclusive: str
 
+#prints the outputs
 def printOutput(outputs):
     if len(outputs) == 0:
         print('No such assignment is possible')
@@ -122,7 +123,7 @@ def MRVHeusitic(items, inclusives, exclusives, equals, notEquals, simultaneous):
     #Return item with highest heuristic
     return maxHeuristicItem
 
-
+#Helper for forward checking, iterates through constraints and returns the appropriate variables
 def BinaryNotEqualsForward(variable, weight, constraints, outputs, limits, possibleBags):
     if not possibleBags:
         for outputBag in outputs:
@@ -173,7 +174,7 @@ def BinaryNotEqualsForward(variable, weight, constraints, outputs, limits, possi
         else:
             return '0', variable
 
-
+#Helper for forward checking, iterates through constraints and returns the appropriate variables
 def UnaryExclusiveForward(variable, weight, constraints, outputs, limits, possibleBags):
     if not possibleBags:
         for outputBag in outputs:
@@ -219,7 +220,7 @@ def UnaryExclusiveForward(variable, weight, constraints, outputs, limits, possib
             else:
                 return '0', variable
 
-
+#Helper for forward checking, iterates through constraints and returns the appropriate variables
 def BinarySimultaneousForward(variable, weight, constraints, outputs, limits, possibleBags):
     if not possibleBags:
         for outputBag in outputs:
@@ -293,7 +294,7 @@ def BinarySimultaneousForward(variable, weight, constraints, outputs, limits, po
             else:
                 return '0', variable
 
-
+#Helper for forward checking, iterates through constraints and returns the appropriate variables
 def BinaryEqualsForward(variable, weight, constraints, outputs, limits, possibleBags):
     if not possibleBags:
         for outputBag in outputs:
@@ -355,7 +356,7 @@ def BinaryEqualsForward(variable, weight, constraints, outputs, limits, possible
             else:
                 return '0', variable
 
-
+#Helper for forward checking, iterates through constraints and returns the appropriate variables
 def UnaryInclusiveForward(variable, weight, constraints, outputs, limits, possibleBags):
     for bag in constraints.unaryInclusive:
         for outputBag in outputs:
@@ -400,7 +401,7 @@ def UnaryInclusiveForward(variable, weight, constraints, outputs, limits, possib
             else:
                 return '0', variable
 
-
+#forward checking implimentation
 def ForwardChecking(itemToExpand, variables, outputs, limits):
     possibleBags = []
     constraints = itemToExpand[7]
@@ -482,6 +483,7 @@ def putInBag(outputs, bag, item):
             outputs.remove(outputBag)
     outputs.append(newOutputBag)
 
+#Backtracking implimentaion
 def Backtracking(outputs, variables):
     for outputBag in outputs:
         if outputBag.usedCapacity < outputBag.requiredCapacity:
@@ -511,7 +513,7 @@ def Backtracking(outputs, variables):
 items = []
 bags = []
 outputs = []
-
+#CSP implimentation.
 def CSP(variables, values, limits, inclusives, exclusives, equals, notEquals, simultaneous):
     for bag in values:
         bags.append(bag.bag)
