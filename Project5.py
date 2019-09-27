@@ -106,4 +106,6 @@ for line in file:
             simultaneous.append(BinarySimultaneous(items, bags))
         counter += 1
 
+if not limits:
+    limits.append(Limits(1,999))
 CSP(variables, values, limits, inclusives, exclusives, equals, notEquals, simultaneous)

@@ -1,4 +1,6 @@
 from typing import NamedTuple
+import random
+import math
 
 class OutputBag(NamedTuple):
     bag: chr
@@ -120,7 +122,284 @@ def MRVHeusitic(items, inclusives, exclusives, equals, notEquals, simultaneous):
     #Return item with highest heuristic
     return maxHeuristicItem
 
-#NOT FINISHED
+
+def BinaryNotEqualsForward(variable, weight, constraints, outputs, limits, possibleBags):
+    if not possibleBags:
+        for outputBag in outputs:
+            if (outputBag.numItems < limits[0].upperBound) and (outputBag.wastedCapacity >= weight):
+                possibleBags.append(outputBag.bag)
+                if outputBag.items:
+                    for i1 in outputBag.items:
+                        for i2 in constraints.binaryNotEquals:
+                            if i1 == i2:
+                                possibleBags.remove(outputBag.bag)
+    else:
+        for bag in possibleBags:
+            for outputBag in outputs:
+                if outputBag.bag == bag:
+                    if outputBag.items:
+                        for i1 in outputBag.items:
+                            for i2 in constraints.binaryNotEquals:
+                                if i1 == i2:
+                                    possibleBags.remove(bag)
+
+    for outputBag in outputs:
+        if (outputBag.numItems < limits[0].upperBound) and (outputBag.wastedCapacity >= weight):
+            possibleBags.append(outputBag.bag)
+    max = 0
+    chosenBag = 0
+    for bag in possibleBags:
+        for outputBag in outputs:
+            if outputBag.bag == bag:
+                if (outputBag.numItems < limits[0].upperBound) and (
+                        (outputBag.usedCapacity + weight) == outputBag.totalCapacity):
+                    if max < 3:
+                        max = 3
+                        chosenBag = bag
+                if (outputBag.numItems == 0):
+                    if max < 2:
+                        max = 2
+                        chosenBag = bag
+                if (outputBag.numItems < limits[0].upperBound) and (
+                        outputBag.usedCapacity < outputBag.requiredCapacity):
+                    if max < 1:
+                        max = 1
+                        chosenBag = bag
+    if max > 0:
+        return chosenBag, variable
+    else:
+        if possibleBags:
+            return random.choice(possibleBags), variable
+        else:
+            return '0', variable
+
+
+def UnaryExclusiveForward(variable, weight, constraints, outputs, limits, possibleBags):
+    if not possibleBags:
+        for outputBag in outputs:
+            if (outputBag.numItems < limits[0].upperBound) and (outputBag.wastedCapacity >= weight):
+                possibleBags.append(outputBag.bag)
+                for bag in constraints.unaryExclusive:
+                    if outputBag.bag == bag:
+                        possibleBags.remove(bag)
+    else:
+        for b1 in possibleBags:
+            for b2 in constraints.unaryExclusive:
+                if b1 == b2:
+                    possibleBags.remove(b1)
+
+    if constraints.binaryNotEquals:
+        return BinaryNotEqualsForward(variable, weight, constraints, outputs, limits, possibleBags)
+    else:
+        for outputBag in outputs:
+            if (outputBag.numItems < limits[0].upperBound) and (outputBag.wastedCapacity >= weight):
+                possibleBags.append(outputBag.bag)
+        max = 0
+        chosenBag = 0
+        for bag in possibleBags:
+            for outputBag in outputs:
+                if outputBag.bag == bag:
+                    if (outputBag.numItems < limits[0].upperBound) and ((outputBag.usedCapacity + weight) == outputBag.totalCapacity):
+                        if max < 3:
+                            max = 3
+                            chosenBag = bag
+                    if (outputBag.numItems == 0):
+                        if max < 2:
+                            max = 2
+                            chosenBag = bag
+                    if (outputBag.numItems < limits[0].upperBound) and (outputBag.usedCapacity < outputBag.requiredCapacity):
+                        if max < 1:
+                            max = 1
+                            chosenBag = bag
+        if max > 0:
+            return chosenBag, variable
+        else:
+            if possibleBags:
+                return random.choice(possibleBags), variable
+            else:
+                return '0', variable
+
+
+def BinarySimultaneousForward(variable, weight, constraints, outputs, limits, possibleBags):
+    if not possibleBags:
+        for outputBag in outputs:
+            for b1 in constraints.binarySimultaneousBags:
+                if outputBag.bag == b1:
+                    for i1 in constraints.binarySimultaneousItems:
+                        if outputBag.items:
+                            for i2 in outputBag.items:
+                                if i1 == i2:
+                                    for b2 in constraints.binarySimultaneousBags:
+                                        if outputBag.bag != b2:
+                                            possibleBags.append(b2)
+        for outputBag in outputBag:
+            for bag in possibleBags:
+                if bag == outputBag.bag:
+                    if not ((outputBag.numItems < limits[0].upperBound) and (outputBag.wastedCapacity >= weight)):
+                        possibleBags.remove(bag)
+    else:
+        oldPossibleBags = possibleBags
+        possibleBags = []
+        for b1 in possibleBags:
+            for outputBag in outputs:
+                if outputBag.bag == b1:
+                    for b2 in constraints.binarySimultaneousBags:
+                        if b1 == b2:
+                            for i1 in constraints.binarySimultaneousItems:
+                                if outputBag.items:
+                                    for i2 in outputBag.items:
+                                        if i1 == i2:
+                                            for b3 in constraints.binarySimultaneousBags:
+                                                if b1 != b3:
+                                                    possibleBags.append(b3)
+        for outputBag in outputBag:
+            for bag in possibleBags:
+                if bag == outputBag.bag:
+                    if not ((outputBag.numItems < limits[0].upperBound) and (outputBag.wastedCapacity >= weight)):
+                        possibleBags.remove(bag)
+        if not possibleBags:
+            possibleBags = oldPossibleBags
+
+    if constraints.unaryExclusive:
+        return UnaryExclusiveForward(variable, weight, constraints, outputs, limits, possibleBags)
+    elif constraints.binaryNotEquals:
+        return BinaryNotEqualsForward(variable, weight, constraints, outputs, limits, possibleBags)
+    else:
+        for outputBag in outputs:
+            if (outputBag.numItems < limits[0].upperBound) and (outputBag.wastedCapacity >= weight):
+                possibleBags.append(outputBag.bag)
+        max = 0
+        chosenBag = 0
+        for bag in possibleBags:
+            for outputBag in outputs:
+                if outputBag.bag == bag:
+                    if (outputBag.numItems < limits[0].upperBound) and ((outputBag.usedCapacity + weight) == outputBag.totalCapacity):
+                        if max < 3:
+                            max = 3
+                            chosenBag = bag
+                    if (outputBag.numItems == 0):
+                        if max < 2:
+                            max = 2
+                            chosenBag = bag
+                    if (outputBag.numItems < limits[0].upperBound) and (outputBag.usedCapacity < outputBag.requiredCapacity):
+                        if max < 1:
+                            max = 1
+                            chosenBag = bag
+        if max > 0:
+            return chosenBag, variable
+        else:
+            if possibleBags:
+                return random.choice(possibleBags), variable
+            else:
+                return '0', variable
+
+
+def BinaryEqualsForward(variable, weight, constraints, outputs, limits, possibleBags):
+    if not possibleBags:
+        for outputBag in outputs:
+            if outputBag.items:
+                for i1 in outputBag.items:
+                    for i2 in constraints.binaryEquals:
+                        if i1 == i2:
+                            if (outputBag.numItems < limits[0].upperBound) and (outputBag.wastedCapacity >= weight):
+                                possibleBags.append(outputBag.bag)
+            else:
+                if (outputBag.numItems < limits[0].upperBound) and (outputBag.wastedCapacity >= weight):
+                    possibleBags.append(outputBag.bag)
+    else:
+        for bag in possibleBags:
+            flag = 0
+            for outputBag in outputs:
+                if bag == outputBag.bag:
+                    if outputBag.items:
+                        for i1 in outputBag.items:
+                            for i2 in constraints.binaryEquals:
+                                if i1 == i2:
+                                    flag = 1
+            if not flag:
+                possibleBags.remove(bag)
+
+    if constraints.binarySimultaneousBags:
+        return BinarySimultaneousForward(variable, weight, constraints, outputs, limits, possibleBags)
+    elif constraints.unaryExclusive:
+        return UnaryExclusiveForward(variable, weight, constraints, outputs, limits, possibleBags)
+    elif constraints.binaryNotEquals:
+        return BinaryNotEqualsForward(variable, weight, constraints, outputs, limits, possibleBags)
+    else:
+        for outputBag in outputs:
+            if (outputBag.numItems < limits[0].upperBound) and (outputBag.wastedCapacity >= weight):
+                possibleBags.append(outputBag.bag)
+        max = 0
+        chosenBag = 0
+        for bag in possibleBags:
+            for outputBag in outputs:
+                if outputBag.bag == bag:
+                    if (outputBag.numItems < limits[0].upperBound) and ((outputBag.usedCapacity + weight) == outputBag.totalCapacity):
+                        if max < 3:
+                            max = 3
+                            chosenBag = bag
+                    if (outputBag.numItems == 0):
+                        if max < 2:
+                            max = 2
+                            chosenBag = bag
+                    if (outputBag.numItems < limits[0].upperBound) and (outputBag.usedCapacity < outputBag.requiredCapacity):
+                        if max < 1:
+                            max = 1
+                            chosenBag = bag
+        if max > 0:
+            return chosenBag, variable
+        else:
+            if possibleBags:
+                return random.choice(possibleBags), variable
+            else:
+                return '0', variable
+
+
+def UnaryInclusiveForward(variable, weight, constraints, outputs, limits, possibleBags):
+    for bag in constraints.unaryInclusive:
+        for outputBag in outputs:
+            if outputBag.bag == bag:
+                if (outputBag.numItems < limits[0].upperBound) and (outputBag.wastedCapacity >= weight):
+                    possibleBags.append(bag)
+
+    if constraints.binaryEquals:
+        return BinaryEqualsForward(variable, weight, constraints, outputs, limits, possibleBags)
+    elif constraints.binarySimultaneousBags:
+        return BinarySimultaneousForward(variable, weight, constraints, outputs, limits, possibleBags)
+    elif constraints.unaryExclusive:
+        return UnaryExclusiveForward(variable, weight, constraints, outputs, limits, possibleBags)
+    elif constraints.binaryNotEquals:
+        return BinaryNotEqualsForward(variable, weight, constraints, outputs, limits, possibleBags)
+    else:
+        for outputBag in outputs:
+            if (outputBag.numItems < limits[0].upperBound) and (outputBag.wastedCapacity >= weight):
+                possibleBags.append(outputBag.bag)
+        max = 0
+        chosenBag = 0
+        for bag in possibleBags:
+            for outputBag in outputs:
+                if outputBag.bag == bag:
+                    if (outputBag.numItems < limits[0].upperBound) and ((outputBag.usedCapacity + weight) == outputBag.totalCapacity):
+                        if max < 3:
+                            max = 3
+                            chosenBag = bag
+                    if (outputBag.numItems == 0):
+                        if max < 2:
+                            max = 2
+                            chosenBag = bag
+                    if (outputBag.numItems < limits[0].upperBound) and (outputBag.usedCapacity < outputBag.requiredCapacity):
+                        if max < 1:
+                            max = 1
+                            chosenBag = bag
+        if max > 0:
+            return chosenBag, variable
+        else:
+            if possibleBags:
+                return random.choice(possibleBags), variable
+            else:
+                return '0', variable
+
+
 def ForwardChecking(itemToExpand, variables, outputs, limits):
     possibleBags = []
     constraints = itemToExpand[7]
@@ -131,28 +410,64 @@ def ForwardChecking(itemToExpand, variables, outputs, limits):
             weight = item.weight
             variable = item
 
-    for bag in constraints.unaryInclusive:
+    if constraints.unaryInclusive:
+        return UnaryInclusiveForward(variable, weight, constraints, outputs, limits, possibleBags)
+    elif constraints.binaryEquals:
+        return BinaryEqualsForward(variable, weight, constraints, outputs, limits, possibleBags)
+    elif constraints.binarySimultaneousBags:
+        return BinarySimultaneousForward(variable, weight, constraints, outputs, limits, possibleBags)
+    elif constraints.unaryExclusive:
+        return UnaryExclusiveForward(variable, weight, constraints, outputs, limits, possibleBags)
+    elif constraints.binaryNotEquals:
+        return BinaryNotEqualsForward(variable, weight, constraints, outputs, limits, possibleBags)
+    else:
         for outputBag in outputs:
-            if outputBag.bag == bag:
-                if outputBag.wastedCapacity >= weight:
-                    possibleBags.append(bag)
-                    for item in outputBag.items:
-                        for element in constraints.binaryNotEquals:
-                            if item == element:
-                                possibleBags.remove(bag)
-                                break
-                        return bag, variable
+            if (outputBag.numItems < limits[0].upperBound) and (outputBag.wastedCapacity >= weight):
+                possibleBags.append(outputBag.bag)
+        max = 0
+        chosenBag = 0
+        for bag in possibleBags:
+            for outputBag in outputs:
+                if outputBag.bag == bag:
+                    if (outputBag.numItems < limits[0].upperBound) and ((outputBag.usedCapacity + weight) == outputBag.totalCapacity):
+                        if max < 3:
+                            max = 3
+                            chosenBag = bag
+                    if (outputBag.numItems == 0):
+                        if max < 2:
+                            max = 2
+                            chosenBag = bag
+                    if (outputBag.numItems < limits[0].upperBound) and (outputBag.usedCapacity < outputBag.requiredCapacity):
+                        if max < 1:
+                            max = 1
+                            chosenBag = bag
+        if max > 0:
+            return chosenBag, variable
+        else:
+            if possibleBags:
+                return random.choice(possibleBags), variable
+            else:
+                return '0', variable
+
+#Remove item from output bag
+def removeFromBag(outputs, bag, item):
+    newOutputBag = 0
     for outputBag in outputs:
-        if outputBag.wastedCapacity >= weight:
-            possibleBags.append(outputBag.bag)
-    for bag in possibleBags:
-        for outputBag in outputs:
-            if outputBag.bag == bag:
-                if outputBag.usedCapacity < outputBag.requiredCapacity:
-                    return bag, variable
+        if outputBag.bag == bag:
+            outputBag.items.remove(item.item)
+            l = list(outputBag)
+            l[2] = outputBag.numItems - 1
+            l[4] = outputBag.usedCapacity - item.weight
+            l[5] = outputBag.wastedCapacity + item.weight
+            newOutputBag = OutputBag(l[0], l[1], l[2], l[3], l[4], l[5], l[6])
+    for outputBag in outputs:
+        if outputBag.bag == bag:
+            outputs.remove(outputBag)
+    outputs.append(newOutputBag)
 
 #Put item in output bag
 def putInBag(outputs, bag, item):
+    newOutputBag = 0
     for outputBag in outputs:
         if outputBag.bag == bag:
             outputBag.items.append(item.item)
@@ -161,8 +476,36 @@ def putInBag(outputs, bag, item):
             l[4] = outputBag.usedCapacity + item.weight
             l[5] = outputBag.wastedCapacity - item.weight
             newOutputBag = OutputBag(l[0], l[1], l[2], l[3], l[4], l[5], l[6])
+    for outputBag in outputs:
+        if outputBag.bag == bag:
             outputs.remove(outputBag)
-            outputs.append(newOutputBag)
+    outputs.append(newOutputBag)
+
+def Backtracking(outputs, variables):
+    for outputBag in outputs:
+        if outputBag.usedCapacity < outputBag.requiredCapacity:
+            for bag in outputs:
+                if outputBag.bag != bag.bag:
+                    for item1 in outputBag.items:
+                        for variable1 in variables:
+                            if variable1.item == item1:
+                                for item2 in bag.items:
+                                    for variable2 in variables:
+                                        if variable2.item == item2:
+                                            if ((outputBag.usedCapacity - variable1.weight + variable2.weight) >= outputBag.requiredCapacity) and ((bag.usedCapacity - variable2.weight + variable1.weight) >= bag.requiredCapacity):
+                                                removeFromBag(outputs, outputBag.bag, variable1)
+                                                removeFromBag(outputs, bag.bag, variable2)
+                                                putInBag(outputs, outputBag.bag, variable2)
+                                                putInBag(outputs, bag.bag, variable1)
+                                                return
+                    for item in bag.items:
+                        for variable in variables:
+                            if variable.item == item:
+                                if ((outputBag.usedCapacity + variable.weight) >= outputBag.requiredCapacity):
+                                    removeFromBag(outputs, bag.bag, variable)
+                                    putInBag(outputs, outputBag.bag, variable)
+                                    return
+
 
 items = []
 bags = []
@@ -171,18 +514,20 @@ outputs = []
 def CSP(variables, values, limits, inclusives, exclusives, equals, notEquals, simultaneous):
     for bag in values:
         bags.append(bag.bag)
-        outputs.append(OutputBag(bag.bag, [], 0, bag.capacity, 0, bag.capacity, round(0.9*bag.capacity)))
+        outputs.append(OutputBag(bag.bag, [], 0, bag.capacity, 0, bag.capacity, math.floor(0.9*bag.capacity)))
     for item in variables:
         items.append(item.item)
     for i in range(len(variables)):
         itemToExpand = MRVHeusitic(items, inclusives, exclusives, equals, notEquals, simultaneous)
         items.remove(itemToExpand[0])
         bag, item = ForwardChecking(itemToExpand, variables, outputs, limits)
+        if bag == '0':
+            noOutput = []
+            printOutput(noOutput)
+            return
         putInBag(outputs, bag, item)
+    Backtracking(outputs, variables)
     printOutput(outputs)
 
 def LeastConstrainingHeuristic():
-    return
-
-def Backtracking():
     return
