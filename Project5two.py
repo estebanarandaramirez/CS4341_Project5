@@ -15,12 +15,9 @@ from Solve import CSP, putInBag, removeFromBag
 def maximum_capacity_helper(capacity):
     return round(0.9 * capacity)
 
-
 def merge(list1, list2):
     merged_list = [(list1[i], list2[i]) for i in range(0, len(list1))]
     return merged_list
-
-all = ["bags", "constraints", "csp", "item", "solve"]
 
 def LCVHeusitic(items, inclusives, exclusives, equals, notEquals, simultaneous, outputs):
     item_key = []
@@ -41,19 +38,18 @@ def LCVHeusitic(items, inclusives, exclusives, equals, notEquals, simultaneous, 
                 for value2 in values:
                     #temporairly put in the value to see if constraints fit in this bag.
                     putInBag(outputs, value2, nonMainItems)
-
-                    #Add 1 to constraining for each v
-
+                    #check if output fits all constraits
+                    #NEEDS TO BE COMPLETED!!!
+                    if(outputs fits all constraits)
+                        # Add 1 to constraining for each value that fits all the constraits
+                        constraining += 1
                     #take out the item to prevent output contamination.
                     removeFromBag(outputs, value2, nonMainItems)
         constraining_values_key.append(constraining)
     #merged list with key and items
     item_constraint_tuples = merge(item_key,constraining_values_key)
     #sorting tuple list into acending order.
-    return sorted(item_constraint_tuples, key=lambda item_constraint_tuples: item_constraint_tuples[1])
-
-def checkConstraints(filledbags):
-    for bags in filledbags:
+    return sorted(item_constraint_tuples, key=lambda item_constraint_tuples: item_constraint_tuples[1]).reverse()
 
 
 
