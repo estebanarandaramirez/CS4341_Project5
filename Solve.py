@@ -232,7 +232,7 @@ def BinarySimultaneousForward(variable, weight, constraints, outputs, limits, po
                                     for b2 in constraints.binarySimultaneousBags:
                                         if outputBag.bag != b2:
                                             possibleBags.append(b2)
-        for outputBag in outputBag:
+        for outputBag in outputs:
             for bag in possibleBags:
                 if bag == outputBag.bag:
                     if not ((outputBag.numItems < limits[0].upperBound) and (outputBag.wastedCapacity >= weight)):
@@ -252,7 +252,7 @@ def BinarySimultaneousForward(variable, weight, constraints, outputs, limits, po
                                             for b3 in constraints.binarySimultaneousBags:
                                                 if b1 != b3:
                                                     possibleBags.append(b3)
-        for outputBag in outputBag:
+        for outputBag in outputs:
             for bag in possibleBags:
                 if bag == outputBag.bag:
                     if not ((outputBag.numItems < limits[0].upperBound) and (outputBag.wastedCapacity >= weight)):
@@ -303,7 +303,8 @@ def BinaryEqualsForward(variable, weight, constraints, outputs, limits, possible
                         if i1 == i2:
                             if (outputBag.numItems < limits[0].upperBound) and (outputBag.wastedCapacity >= weight):
                                 possibleBags.append(outputBag.bag)
-            else:
+        if not possibleBags:
+            for outputBag in outputs:
                 if (outputBag.numItems < limits[0].upperBound) and (outputBag.wastedCapacity >= weight):
                     possibleBags.append(outputBag.bag)
     else:
@@ -527,7 +528,7 @@ def CSP(variables, values, limits, inclusives, exclusives, equals, notEquals, si
             return
         putInBag(outputs, bag, item)
     Backtracking(outputs, variables)
-    printOutput(outputs)
+    return outputs
 
 def LeastConstrainingHeuristic():
     return

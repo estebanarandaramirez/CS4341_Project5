@@ -33,8 +33,8 @@ class BinarySimultaneous(NamedTuple):
     items: str
     bags: str
 
-if len(sys.argv) != 2:
-    sys.exit('Must specify input file')
+if len(sys.argv) != 3:
+    sys.exit('Must specify input and output files')
 inputFile = sys.argv[1]
 data = np.loadtxt(inputFile, delimiter='\n', dtype='str')
 inputData = []
@@ -108,4 +108,16 @@ for line in file:
 
 if not limits:
     limits.append(Limits(1,999))
-CSP(variables, values, limits, inclusives, exclusives, equals, notEquals, simultaneous)
+outputs = CSP(variables, values, limits, inclusives, exclusives, equals, notEquals, simultaneous)
+
+outputFile = sys.argv[2]
+with open(outputFile, 'w') as infile:
+    if not outputs:
+        infile.write('No such assignment is possible')
+    else:
+        for output in outputs:
+            infile.write(output.bag + ' ' + ' '.join(output.items) + '\n')
+            infile.write('number of items: ' + str(output.numItems) + '\n')
+            infile.write('total weight ' + str(output.usedCapacity) + '/' + str(output.totalCapacity) + '\n')
+            infile.write('wasted capacity: ' + str(output.wastedCapacity) + '\n')
+            infile.write('\n')
