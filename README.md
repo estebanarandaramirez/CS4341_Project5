@@ -4,3 +4,4 @@
 
 Program that solves a Constraint Satisfaction Problem (CSP) by implementing Back-tracking,
 Forward Checking, and heuristics.
+

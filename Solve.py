@@ -7,6 +7,7 @@ class OutputBag(NamedTuple):
     totalCapacity: int
     usedCapacity: int
     wastedCapacity: int
+    requiredCapacity: int
 
 class ConstraintItems(NamedTuple):
     binarySimultaneousItems: str
@@ -117,13 +118,52 @@ def MRVHeusitic(items, inclusives, exclusives, equals, notEquals, simultaneous):
             max = itemHeuristic[6]
             maxHeuristicItem = itemHeuristic
     #Return item with highest heuristic
-    print(maxHeuristicItem)
     return maxHeuristicItem
 
+#NOT FINISHED
 def ForwardChecking(itemToExpand, variables, outputs, limits):
-    return
+    possibleBags = []
+    constraints = itemToExpand[7]
+    weight = 0
+    variable = 0
+    for item in variables:
+        if item.item == itemToExpand[0]:
+            weight = item.weight
+            variable = item
 
-allocatedItems = []
+    for bag in constraints.unaryInclusive:
+        for outputBag in outputs:
+            if outputBag.bag == bag:
+                if outputBag.wastedCapacity >= weight:
+                    possibleBags.append(bag)
+                    for item in outputBag.items:
+                        for element in constraints.binaryNotEquals:
+                            if item == element:
+                                possibleBags.remove(bag)
+                                break
+                        return bag, variable
+    for outputBag in outputs:
+        if outputBag.wastedCapacity >= weight:
+            possibleBags.append(outputBag.bag)
+    for bag in possibleBags:
+        for outputBag in outputs:
+            if outputBag.bag == bag:
+                if outputBag.usedCapacity < outputBag.requiredCapacity:
+                    return bag, variable
+
+#Put item in output bag
+def putInBag(outputs, bag, item):
+    for outputBag in outputs:
+        if outputBag.bag == bag:
+            outputBag.items.append(item.item)
+            l = list(outputBag)
+            l[2] = outputBag.numItems + 1
+            l[4] = outputBag.usedCapacity + item.weight
+            l[5] = outputBag.wastedCapacity - item.weight
+            newOutputBag = OutputBag(l[0], l[1], l[2], l[3], l[4], l[5], l[6])
+            outputs.remove(outputBag)
+            outputs.append(newOutputBag)
+
 items = []
 bags = []
 outputs = []
@@ -131,13 +171,15 @@ outputs = []
 def CSP(variables, values, limits, inclusives, exclusives, equals, notEquals, simultaneous):
     for bag in values:
         bags.append(bag.bag)
-        outputs.append(OutputBag(bag.bag, [], 0, bag.capacity, 0, bag.capacity))
+        outputs.append(OutputBag(bag.bag, [], 0, bag.capacity, 0, bag.capacity, round(0.9*bag.capacity)))
     for item in variables:
         items.append(item.item)
     for i in range(len(variables)):
         itemToExpand = MRVHeusitic(items, inclusives, exclusives, equals, notEquals, simultaneous)
         items.remove(itemToExpand[0])
-        ForwardChecking(itemToExpand, variables, outputs, limits, allocatedItems)
+        bag, item = ForwardChecking(itemToExpand, variables, outputs, limits)
+        putInBag(outputs, bag, item)
+    printOutput(outputs)
 
 def LeastConstrainingHeuristic():
     return
