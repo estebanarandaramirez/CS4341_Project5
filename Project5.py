@@ -18,7 +18,7 @@ def maximum_capacity_helper(capacity):
 
 all = ["bag", "constraint", "csp", "item", "solver"]
 
-
+# attemmpt as csp
 class CSP(object):
     def __init__(self, items, bags):
         self.bags = bags
@@ -27,7 +27,7 @@ class CSP(object):
         for item_name in self.items:
             self.items[item_name].possible_bags = self.bags.copy()
 
-
+# item object for easy use
 class Item(object):
     def __init__(self, name, weight):
         # Name of the Item
