@@ -3,7 +3,7 @@ import numpy as np
 from typing import NamedTuple
 from Solve import CSP
 
-
+'''
 # def backtrack(variable, value, limits, unary_inclusive, unary_exclusive, binary_equal, binary_not_equals, binary_simultaneous):
 # if complete, return bags
 # Select the MRV variable to fill
@@ -57,7 +57,7 @@ class Item(object):
             self.bag.items = [s for s in self.bag.items if s.name is not self.name]
         bag.items.append(self)
         self.bag = bag
-
+'''
 
 class Variable(NamedTuple):
     item: chr
