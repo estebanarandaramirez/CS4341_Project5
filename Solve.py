@@ -1,7 +1,10 @@
+import time
 from typing import NamedTuple
 import random
 import math
 
+initialTime = 0
+endTime = 0
 class OutputBag(NamedTuple):
     bag: chr
     items: str
@@ -510,11 +513,17 @@ def Backtracking(outputs, variables):
                                     return
 
 
+
 items = []
 bags = []
 outputs = []
 #CSP implimentation.
 def CSP(variables, values, limits, inclusives, exclusives, equals, notEquals, simultaneous):
+    initialTime = 0
+    endTime = 0
+    variablescopy = variables
+    valuescopy = values
+    initialTime = time.time()
     for bag in values:
         bags.append(bag.bag)
         outputs.append(OutputBag(bag.bag, [], 0, bag.capacity, 0, bag.capacity, math.floor(0.9*bag.capacity)))
@@ -523,14 +532,57 @@ def CSP(variables, values, limits, inclusives, exclusives, equals, notEquals, si
     for i in range(len(variables)):
         itemToExpand = MRVHeusitic(items, inclusives, exclusives, equals, notEquals, simultaneous)
         items.remove(itemToExpand[0])
+        #print(items)
+        #item = itemToExpand[0]
+        #bag = valuescopy[random.randint(0, len(variablescopy))]
+        #print(bag)
         bag, item = ForwardChecking(itemToExpand, variables, outputs, limits)
+        #print(valuescopy[random.randint(0,len(variablescopy)) ])
         if bag == '0':
             noOutput = []
             printOutput(noOutput)
             return
         putInBag(outputs, bag, item)
     Backtracking(outputs, variables)
+    endTime = time.time()
+    print("time elapsed", str(endTime - initialTime))
+
     return outputs
 
-def LeastConstrainingHeuristic():
-    return
+#LCV helper function.
+def merge(list1, list2):
+    merged_list = [(list1[i], list2[i]) for i in range(0, len(list1))]
+    return merged_list
+
+def LCVHeusitic(items,values,outputs):
+    item_key = []
+    constraining_values_key =[]
+    #Check per item
+    for item in items:
+        item_key.append(item)
+        #the number of places in total the other items can go in given item in a bag
+        constraining = 0
+        outputsfitsallconstraits = True
+
+        #itrates through putting the item in each bag
+        for value in values:
+            #list of items that not the one in the bag.
+            nonUsedItems = items.remove(item)
+            #intrate though the remaining items
+            for nonMainItems in nonUsedItems:
+                #try to put remaining item in each bag so that we can add to constraining
+                for value2 in values:
+                    #temporairly put in the value to see if constraints fit in this bag.
+                    putInBag(outputs, value2, nonMainItems)
+                    #check if output fits all constraits
+                    #NEEDS TO BE COMPLETED!!!
+                    if(outputsfitsallconstraits):
+                        # Add 1 to constraining for each value that fits all the constraits
+                        constraining += 1
+                    #take out the item to prevent output contamination.
+                    removeFromBag(outputs, value2, nonMainItems)
+        constraining_values_key.append(constraining)
+    #merged list with key and items
+    item_constraint_tuples = merge(item_key,constraining_values_key)
+    #sorting tuple list into acending order.
+    return sorted(item_constraint_tuples, key=lambda item_constraint_tuples: item_constraint_tuples[1]).reverse()
