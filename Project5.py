@@ -11,7 +11,7 @@ from Solve import CSP
 # backtracking an assignment when stuck
 # Finds 90% rounded down
 
-
+#finds the max bag capasity
 def maximum_capacity_helper(capacity):
     return round(0.9 * capacity)
 
