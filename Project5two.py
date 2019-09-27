@@ -16,9 +16,80 @@ def maximum_capacity_helper(capacity):
     return round(0.9 * capacity)
 
 
-all = ["bag", "constraint", "csp", "item", "solver"]
+def merge(list1, list2):
+    merged_list = [(list1[i], list2[i]) for i in range(0, len(list1))]
+    return merged_list
 
-# attemmpt as csp
+all = ["bags", "constraints", "csp", "item", "solve"]
+
+def LCVHeusitic(items, inclusives, exclusives, equals, notEquals, simultaneous):
+    item_key = []
+    constraining_values_key =[]
+    #Check per item
+    for item in items:
+        item_key.append(item)
+        #the number of places in total the other items can go in given item in a bag
+        constraining = 0
+
+        #itrates through putting the item in each bag
+        for value in values:
+            #list of items that not the one in the bag.
+            #need to make a fun or a way to get a list of these!!!!!!!!!!!
+            nonUsedItems = []
+
+            for nonMainItems in nonUsedItems:
+                #check in how many bags this item can fit.
+                # Check constraints in ascending order of importance
+                count, binarySimultaneousItems, binarySimultaneousBags = CheckSimultaneousConstraints(item,simultaneous)
+                count, binaryNotEquals = CheckBinaryConstraints(item, notEquals)
+                count, unaryExclusive = CheckUnaryConstraints(item, exclusives)
+                count, binaryEquals = CheckBinaryConstraints(item, equals)
+                count, unaryInclusive = CheckUnaryConstraints(item, inclusives)
+        constraining_values_key.append(constraining)
+    #merged list with key and items
+    item_constraint_tuples = merge(item_key,constraining_values_key)
+    #sorting tuple list into acending order.
+    return sorted(item_constraint_tuples, key=lambda item_constraint_tuples: item_constraint_tuples[1])
+
+
+def MRVHeusitic(items, inclusives, exclusives, equals, notEquals, simultaneous):
+    heuristics = []
+    for item in items:
+        itemHeuristic = []
+        itemHeuristic.append(item)
+        #Check constraints in ascending order of importance
+        count, binarySimultaneousItems, binarySimultaneousBags = CheckSimultaneousConstraints(item, simultaneous)
+        itemHeuristic.append(count)
+        count, binaryNotEquals = CheckBinaryConstraints(item, notEquals)
+        itemHeuristic.append(count)
+        count, unaryExclusive = CheckUnaryConstraints(item, exclusives)
+        itemHeuristic.append(count)
+        count, binaryEquals = CheckBinaryConstraints(item, equals)
+        itemHeuristic.append(count)
+        count, unaryInclusive = CheckUnaryConstraints(item, inclusives)
+        itemHeuristic.append(count)
+        #Sum the weighted number of constraints an item has
+        sum = 0
+        for i in range(len(itemHeuristic)-1):
+            sum += itemHeuristic[i+1] * (i+1)
+        itemHeuristic.append(sum)
+        itemHeuristic.append(ConstraintItems(binarySimultaneousItems, binarySimultaneousBags, binaryNotEquals, unaryExclusive, binaryEquals, unaryInclusive))
+        #Add to the list
+        heuristics.append(itemHeuristic)
+    #Decide item with max heuristic and break ties if any
+    max = -1
+    maxHeuristicItem = ''
+    for itemHeuristic in heuristics:
+        if itemHeuristic[6] == max:
+            maxHeuristicItem = DegreeHeuristic(maxHeuristicItem, itemHeuristic)
+        elif itemHeuristic[6] > max:
+            max = itemHeuristic[6]
+            maxHeuristicItem = itemHeuristic
+    #Return item with highest heuristic
+    print(maxHeuristicItem)
+    return maxHeuristicItem
+
+
 class CSP(object):
     def __init__(self, items, bags):
         self.bags = bags
@@ -27,7 +98,7 @@ class CSP(object):
         for item_name in self.items:
             self.items[item_name].possible_bags = self.bags.copy()
 
-# item object for easy use
+
 class Item(object):
     def __init__(self, name, weight):
         # Name of the Item
@@ -90,7 +161,7 @@ class BinarySimultaneous(NamedTuple):
     bags: str
 
 if len(sys.argv) != 2:
-    sys.exit('Must specify input file')
+    sys.exit("Must specify input file")
 inputFile = sys.argv[1]
 data = np.loadtxt(inputFile, delimiter='\n', dtype='str')
 inputData = []
@@ -162,6 +233,7 @@ for line in file:
             simultaneous.append(BinarySimultaneous(items, bags))
         counter += 1
 
-if not limits:
-    limits.append(Limits(1,999))
 CSP(variables, values, limits, inclusives, exclusives, equals, notEquals, simultaneous)
+print(variables)
+print(values)
+print(limits)
