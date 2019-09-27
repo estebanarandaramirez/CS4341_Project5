@@ -1,7 +1,7 @@
 import sys
 import numpy as np
 from typing import NamedTuple
-from Solve import CSP
+from Solve import CSP, putInBag, removeFromBag
 
 
 # def backtrack(variable, value, limits, unary_inclusive, unary_exclusive, binary_equal, binary_not_equals, binary_simultaneous):
@@ -22,7 +22,7 @@ def merge(list1, list2):
 
 all = ["bags", "constraints", "csp", "item", "solve"]
 
-def LCVHeusitic(items, inclusives, exclusives, equals, notEquals, simultaneous):
+def LCVHeusitic(items, inclusives, exclusives, equals, notEquals, simultaneous, outputs):
     item_key = []
     constraining_values_key =[]
     #Check per item
@@ -34,22 +34,27 @@ def LCVHeusitic(items, inclusives, exclusives, equals, notEquals, simultaneous):
         #itrates through putting the item in each bag
         for value in values:
             #list of items that not the one in the bag.
-            #need to make a fun or a way to get a list of these!!!!!!!!!!!
-            nonUsedItems = []
-
+            nonUsedItems = items.remove(item)
+            #intrate though the remaining items
             for nonMainItems in nonUsedItems:
-                #check in how many bags this item can fit.
-                # Check constraints in ascending order of importance
-                count, binarySimultaneousItems, binarySimultaneousBags = CheckSimultaneousConstraints(item,simultaneous)
-                count, binaryNotEquals = CheckBinaryConstraints(item, notEquals)
-                count, unaryExclusive = CheckUnaryConstraints(item, exclusives)
-                count, binaryEquals = CheckBinaryConstraints(item, equals)
-                count, unaryInclusive = CheckUnaryConstraints(item, inclusives)
+                #try to put remaining item in each bag so that we can add to constraining
+                for value2 in values:
+                    #temporairly put in the value to see if constraints fit in this bag.
+                    putInBag(outputs, value2, nonMainItems)
+
+                    #Add 1 to constraining for each v
+
+                    #take out the item to prevent output contamination.
+                    removeFromBag(outputs, value2, nonMainItems)
         constraining_values_key.append(constraining)
     #merged list with key and items
     item_constraint_tuples = merge(item_key,constraining_values_key)
     #sorting tuple list into acending order.
     return sorted(item_constraint_tuples, key=lambda item_constraint_tuples: item_constraint_tuples[1])
+
+def checkConstraints(filledbags):
+    for bags in filledbags:
+
 
 
 def MRVHeusitic(items, inclusives, exclusives, equals, notEquals, simultaneous):
